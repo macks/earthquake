@@ -215,17 +215,17 @@ Earthquake.init do
   help :unfollow, "unfollow user"
 
   command :recent do
-    puts_items twitter.home_timeline(:count => config[:recent_count])
+    puts_items twitter.home_timeline(:count => config[:recent_count], :include_entities => 1)
   end
 
   # :recent jugyo
   command %r|^:recent\s+@?([^\/\s]+)$|, :as => :recent do |m|
-    puts_items twitter.user_timeline(:screen_name => m[1], :include_rts => 1)
+    puts_items twitter.user_timeline(:screen_name => m[1], :include_rts => 1, :include_entities => 1)
   end
 
   # :recent yugui/ruby-committers
   command %r|^:recent\s+([^\s]+)\/([^\s]+)$|, :as => :recent do |m|
-    puts_items twitter.send(:get, "/#{m[1]}/lists/#{m[2]}/statuses.json?include_rts=1")
+    puts_items twitter.send(:get, "/#{m[1]}/lists/#{m[2]}/statuses.json?include_rts=1&include_entities=1")
   end
 
   help :recent, "show recent tweets", <<-HELP
