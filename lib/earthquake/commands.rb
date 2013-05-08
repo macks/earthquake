@@ -225,7 +225,7 @@ Earthquake.init do
 
   # :recent yugui/ruby-committers
   command %r|^:recent\s+([^\s]+)\/([^\s]+)$|, :as => :recent do |m|
-    puts_items twitter.send(:get, "/#{m[1]}/lists/#{m[2]}/statuses.json?include_rts=1&include_entities=1")
+    puts_items twitter.send(:get, "/lists/statuses.json?slug=#{m[2]}&owner_screen_name=#{m[1]}&include_rts=1&include_entities=1")
   end
 
   help :recent, "show recent tweets", <<-HELP
