@@ -8,7 +8,7 @@
   active_support/core_ext
   active_support/dependencies
   active_support/cache
-  twitter/json_stream
+  em-twitter
   notify
   ap
   launchy

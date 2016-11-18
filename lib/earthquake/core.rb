@@ -68,7 +68,7 @@ module Earthquake
         secure:          true,
         output_interval: 1,
         history_size:    1000,
-        api:             { :host => 'userstream.twitter.com', :path => '/2/user.json', :ssl => true },
+        api:             { :host => 'userstream.twitter.com', :path => '/1.1/user.json' },
         confirm_type:    :y,
         expand_url:      false,
         thread_indent:   "  ",
@@ -168,22 +168,30 @@ module Earthquake
     def start_stream(options)
       stop_stream
 
-      options = {
-        :oauth => config.slice(:consumer_key, :consumer_secret).merge(
-          :access_key => config[:token], :access_secret => config[:secret],
-          :proxy => ENV['http_proxy']
-        )
-      }.merge(options)
+      options = options.dup
+      options[:oauth] = config.slice(:consumer_key, :consumer_secret)
+      options[:oauth][:token] = config[:token]
+      options[:oauth][:token_secret] = config[:secret]
+      options[:proxy] = { uri: ENV['http_proxy'] } if ENV['http_proxy']
 
-      @stream = ::Twitter::JSONStream.connect(options)
+      @stream = EM::Twitter::Client.connect(options)
 
-      @stream.each_item do |item|
+      @stream.each do |item|
         @last_data_received_at = Time.now # for reconnect when no data
         item_queue << JSON.parse(item)
       end
 
       @stream.on_error do |message|
         notify "error: #{message}"
+      end
+
+      %w(
+        unauthorized forbidden not_found not_acceptable too_long range_unacceptable
+        enhance_your_calm service_unavailable
+      ).each do |error|
+        @stream.send("on_#{error}") do
+          notify "#{error}: error"
+        end
       end
 
       @stream.on_reconnect do |timeout, retries|
