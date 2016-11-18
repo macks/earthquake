@@ -17,21 +17,21 @@ module Earthquake
   end
 
   once do
-    class ::TwitterOAuth::Client
+    m = Module.new do
       [:status, :info].each do |m|
-        define_method("#{m}_with_cache") do |*args|
+        define_method(m) do |*args|
           key = "#{m}:#{args.join(',')}"
           if result = Earthquake.cache.read(key)
             result.dup
           else
-            result = __send__(:"#{m}_without_cache", *args)
+            result = super
             Earthquake.cache.write(key, result.dup)
             result
           end
         end
-        alias_method_chain m, :cache
       end
     end
+    ::TwitterOAuth::Client.prepend m
   end
 
   extend Twitter
