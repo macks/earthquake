@@ -24,7 +24,7 @@ module Earthquake
           if result = Earthquake.cache.read(key)
             result.dup
           else
-            result = super
+            result = super(*args)
             Earthquake.cache.write(key, result.dup)
             result
           end
